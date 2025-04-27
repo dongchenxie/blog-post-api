@@ -126,7 +126,7 @@
               "type": "string",
               "description": "ID of the template to use",
               "default": "default",
-              "enum": ["default", "technical_tutorial"]
+              "enum": ["default"]
             },
             "keywords": {
               "type": "array",
