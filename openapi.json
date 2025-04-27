@@ -25,109 +25,16 @@
               "ApiKeyAuth": []
             }
           ],
-          "parameters": [
-            {
-              "name": "templateId",
-              "in": "query",
-              "description": "ID of the template to use",
-              "required": false,
-              "schema": {
-                "type": "string",
-                "default": "default",
-                "enum": ["default", "technical_tutorial"]
-              }
-            },
-            {
-              "name": "keywords",
-              "in": "query",
-              "description": "List of keywords for the blog post. Currently only the first keyword is used.",
-              "required": true,
-              "style": "form",
-              "explode": true,
-              "schema": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "minItems": 1,
-                "maxItems": 1
-              }
-            },
-            {
-              "name": "language",
-              "in": "query",
-              "description": "Content language. Must be one of the supported languages.",
-              "required": false,
-              "schema": {
-                "type": "string",
-                "default": "English",
-                "enum": [
-                  "English",
-                  "Spanish",
-                  "French",
-                  "German",
-                  "Italian",
-                  "Portuguese",
-                  "Chinese",
-                  "Japanese",
-                  "Russian",
-                  "Arabic"
-                ]
-              }
-            },
-            {
-              "name": "industry",
-              "in": "query",
-              "description": "Type of industry",
-              "required": false,
-              "schema": {
-                "type": "string",
-                "default": "fishing"
-              }
-            },
-            {
-              "name": "usage",
-              "in": "query",
-              "description": "What the store is primarily used for",
-              "required": false,
-              "schema": {
-                "type": "string",
-                "default": "sale"
-              }
-            },
-            {
-              "name": "location",
-              "in": "query",
-              "description": "Target market location",
-              "required": false,
-              "schema": {
-                "type": "string",
-                "default": "US"
-              }
-            },
-            {
-              "name": "word_count",
-              "in": "query",
-              "description": "Target word count for the content",
-              "required": false,
-              "schema": {
-                "type": "integer",
-                "default": 6000,
-                "minimum": 1000,
-                "maximum": 12000
-              }
-            },
-            {
-              "name": "anchorLink",
-              "in": "query",
-              "description": "URL for inbound links to be included in the content",
-              "required": false,
-              "schema": {
-                "type": "string",
-                "default": "https://google.com"
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPostRequest"
+                }
               }
             }
-          ],
+          },
           "responses": {
             "200": {
               "description": "Successful response",
@@ -277,7 +184,7 @@
             "anchorLink": {
               "type": "string",
               "description": "URL for inbound links to be included in the content",
-              "default": "https://google.com"
+              "example": "https://google.com"
             }
           }
         }
