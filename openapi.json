@@ -1,0 +1,40 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "API Documentation",
+        "version": "1.0.0",
+        "description": "API documentation using OpenAPI 3.1"
+    },
+    "servers": [
+        {
+            "url": "https://api.example.com",
+            "description": "Production server"
+        }
+    ],
+    "paths": {
+        "/example": {
+            "get": {
+                "summary": "Example endpoint",
+                "description": "An example endpoint to demonstrate the API",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Hello, World!"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+} 
