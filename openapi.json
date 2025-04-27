@@ -276,7 +276,7 @@
             "anchorLink": {
               "type": "string",
               "description": "URL for inbound links to be included in the content",
-              "example": "https://google.com"
+              "default": "https://google.com"
             }
           }
         }
