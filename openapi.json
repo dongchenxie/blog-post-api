@@ -52,30 +52,6 @@
           },
           "required": ["message"]
         },
-        "TemplateInfo": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string",
-              "description": "Template identifier"
-            },
-            "name": {
-              "type": "string",
-              "description": "Template name"
-            },
-            "description": {
-              "type": "string",
-              "description": "Template description"
-            },
-            "parameters": {
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/ParameterInfo"
-              }
-            }
-          },
-          "required": ["id", "name", "parameters"]
-        },
         "ParameterInfo": {
           "type": "object",
           "properties": {
