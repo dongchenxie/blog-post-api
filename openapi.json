@@ -1,40 +1,248 @@
 {
     "openapi": "3.1.0",
     "info": {
-        "title": "API Documentation",
-        "version": "1.0.0",
-        "description": "API documentation using OpenAPI 3.1"
+      "title": "Blog Post Generator API",
+      "description": "API for generating SEO-optimized blog content for content sites",
+      "version": "1.0.0",
+      "contact": {
+        "name": "API Support"
+      }
     },
     "servers": [
-        {
-            "url": "https://api.example.com",
-            "description": "Production server"
-        }
+      {
+        "url": "https://37i63ggdokg5pjjiqkqwhfvkre0zgezz.lambda-url.us-east-1.on.aws/",
+        "description": "Production server"
+      }
     ],
-    "paths": {
-        "/example": {
-            "get": {
-                "summary": "Example endpoint",
-                "description": "An example endpoint to demonstrate the API",
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Hello, World!"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+    "components": {
+      "securitySchemes": {
+        "ApiKeyAuth": {
+          "type": "apiKey",
+          "in": "header",
+          "name": "x-api-key",
+          "description": "API key for authentication. Example: d8e8fca2-ee2d-4f17-a83c-b94e42d9f8fa"
         }
+      },
+      "schemas": {
+        "ErrorResponse": {
+          "type": "object",
+          "properties": {
+            "error": {
+              "type": "string",
+              "description": "Error message"
+            }
+          },
+          "required": ["error"]
+        },
+        "SuccessResponse": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string",
+              "description": "Success message"
+            },
+            "content": {
+              "type": "string",
+              "description": "Generated blog content in HTML format"
+            },
+            "metadata": {
+              "type": "object",
+              "description": "Additional metadata about the generated content"
+            }
+          },
+          "required": ["message"]
+        },
+        "TemplateInfo": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Template identifier"
+            },
+            "name": {
+              "type": "string",
+              "description": "Template name"
+            },
+            "description": {
+              "type": "string",
+              "description": "Template description"
+            },
+            "parameters": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/ParameterInfo"
+              }
+            }
+          },
+          "required": ["id", "name", "parameters"]
+        },
+        "ParameterInfo": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Parameter name"
+            },
+            "required": {
+              "type": "boolean",
+              "description": "Whether the parameter is required"
+            },
+            "defaultValue": {
+              "type": "string",
+              "description": "Default value for the parameter"
+            },
+            "description": {
+              "type": "string",
+              "description": "Parameter description"
+            }
+          },
+          "required": ["name", "required"]
+        },
+        "PostApiRequest": {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "string",
+              "description": "ID of the template to use",
+              "default": "default",
+              "enum": ["default", "technical_tutorial"]
+            },
+            "keywords": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of keywords for the blog post. Currently only the first keyword is used.",
+              "minItems": 1,
+              "maxItems": 1,
+              "example": ["Linux handheld"]
+            },
+            "language": {
+              "type": "string",
+              "description": "Content language. Must be one of the supported languages.",
+              "default": "English",
+              "enum": [
+                "English",
+                "Spanish",
+                "French",
+                "German",
+                "Italian",
+                "Portuguese",
+                "Chinese",
+                "Japanese",
+                "Russian",
+                "Arabic"
+              ]
+            },
+            "industry": {
+              "type": "string",
+              "description": "Type of industry",
+              "default": "fishing",
+              "example": "Video Game"
+            },
+            "usage": {
+              "type": "string",
+              "description": "What the store is primarily used for",
+              "default": "sale",
+              "example": "Game Console"
+            },
+            "location": {
+              "type": "string",
+              "description": "Target market location",
+              "default": "US",
+              "example": "US"
+            },
+            "word_count": {
+              "type": "integer",
+              "description": "Target word count for the content",
+              "default": 6000,
+              "minimum": 1000,
+              "maximum": 12000,
+              "example": 6000
+            },
+            "anchorLink": {
+              "type": "string",
+              "description": "URL for inbound links to be included in the content",
+              "example": "https://google.com"
+            }
+          },
+          "required": ["keywords"]
+        }
+      }
+    },
+    "paths": {
+      "/": {
+        "post": {
+          "summary": "Generate blog content",
+          "description": "Generate SEO-optimized blog content based on provided parameters",
+          "security": [
+            {
+              "ApiKeyAuth": []
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostApiRequest"
+                },
+                "example": {
+                  "templateId": "default",
+                  "keywords": ["Linux handheld"],
+                  "language": "English",
+                  "industry": "Video Game",
+                  "usage": "Game Console",
+                  "location": "US",
+                  "word_count": 6000,
+                  "anchorLink": "https://google.com"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/SuccessResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
-} 
+  } 
