@@ -123,7 +123,8 @@
               "description": "URL for inbound links to be included in the content",
               "required": false,
               "schema": {
-                "type": "string"
+                "type": "string",
+                "default": "https://google.com"
               }
             }
           ],
@@ -178,7 +179,7 @@
           "type": "apiKey",
           "in": "header",
           "name": "x-api-key",
-          "description": "API key for authentication. Example: d8e8fca2-ee2d-4f17-a83c-b94e42d9f8fa"
+          "description": "API key for authentication. Example: 550e8400-e29b-41d4-a716-446655440000"
         }
       },
       "schemas": {
