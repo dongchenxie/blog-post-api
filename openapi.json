@@ -1,9 +1,9 @@
 {
     "openapi": "3.1.0",
     "info": {
+      "version": "1.0.0",
       "title": "Blog Post Generator API",
       "description": "API for generating SEO-optimized blog content for content sites",
-      "version": "1.0.0",
       "contact": {
         "name": "API Support"
       }
@@ -14,6 +14,164 @@
         "description": "Production server"
       }
     ],
+    "paths": {
+      "/": {
+        "post": {
+          "summary": "Generate blog content",
+          "operationId": "generateBlogPost",
+          "tags": ["blog"],
+          "security": [
+            {
+              "ApiKeyAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "templateId",
+              "in": "query",
+              "description": "ID of the template to use",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "default": "default",
+                "enum": ["default", "technical_tutorial"]
+              }
+            },
+            {
+              "name": "keywords",
+              "in": "query",
+              "description": "List of keywords for the blog post. Currently only the first keyword is used.",
+              "required": true,
+              "style": "form",
+              "explode": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1,
+                "maxItems": 1
+              }
+            },
+            {
+              "name": "language",
+              "in": "query",
+              "description": "Content language. Must be one of the supported languages.",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "default": "English",
+                "enum": [
+                  "English",
+                  "Spanish",
+                  "French",
+                  "German",
+                  "Italian",
+                  "Portuguese",
+                  "Chinese",
+                  "Japanese",
+                  "Russian",
+                  "Arabic"
+                ]
+              }
+            },
+            {
+              "name": "industry",
+              "in": "query",
+              "description": "Type of industry",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "default": "fishing"
+              }
+            },
+            {
+              "name": "usage",
+              "in": "query",
+              "description": "What the store is primarily used for",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "default": "sale"
+              }
+            },
+            {
+              "name": "location",
+              "in": "query",
+              "description": "Target market location",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "default": "US"
+              }
+            },
+            {
+              "name": "word_count",
+              "in": "query",
+              "description": "Target word count for the content",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "default": 6000,
+                "minimum": 1000,
+                "maximum": 12000
+              }
+            },
+            {
+              "name": "anchorLink",
+              "in": "query",
+              "description": "URL for inbound links to be included in the content",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/SuccessResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "components": {
       "securitySchemes": {
         "ApiKeyAuth": {
@@ -26,16 +184,17 @@
       "schemas": {
         "ErrorResponse": {
           "type": "object",
+          "required": ["error"],
           "properties": {
             "error": {
               "type": "string",
               "description": "Error message"
             }
-          },
-          "required": ["error"]
+          }
         },
         "SuccessResponse": {
           "type": "object",
+          "required": ["message"],
           "properties": {
             "message": {
               "type": "string",
@@ -49,33 +208,11 @@
               "type": "object",
               "description": "Additional metadata about the generated content"
             }
-          },
-          "required": ["message"]
+          }
         },
-        "ParameterInfo": {
+        "BlogPostRequest": {
           "type": "object",
-          "properties": {
-            "name": {
-              "type": "string",
-              "description": "Parameter name"
-            },
-            "required": {
-              "type": "boolean",
-              "description": "Whether the parameter is required"
-            },
-            "defaultValue": {
-              "type": "string",
-              "description": "Default value for the parameter"
-            },
-            "description": {
-              "type": "string",
-              "description": "Parameter description"
-            }
-          },
-          "required": ["name", "required"]
-        },
-        "PostApiRequest": {
-          "type": "object",
+          "required": ["keywords"],
           "properties": {
             "templateId": {
               "type": "string",
@@ -140,82 +277,6 @@
               "type": "string",
               "description": "URL for inbound links to be included in the content",
               "example": "https://google.com"
-            }
-          },
-          "required": ["keywords"]
-        }
-      }
-    },
-    "paths": {
-      "/": {
-        "post": {
-          "summary": "Generate blog content",
-          "description": "Generate SEO-optimized blog content based on provided parameters",
-          "security": [
-            {
-              "ApiKeyAuth": []
-            }
-          ],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PostApiRequest"
-                },
-                "example": {
-                  "templateId": "default",
-                  "keywords": ["Linux handheld"],
-                  "language": "English",
-                  "industry": "Video Game",
-                  "usage": "Game Console",
-                  "location": "US",
-                  "word_count": 6000,
-                  "anchorLink": "https://google.com"
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Successful response",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/SuccessResponse"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad request",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Internal server error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
             }
           }
         }
