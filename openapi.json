@@ -10,12 +10,12 @@
     },
     "servers": [
       {
-        "url": "https://37i63ggdokg5pjjiqkqwhfvkre0zgezz.lambda-url.us-east-1.on.aws/",
+        "url": "https://api.rankscaleai.com",
         "description": "Production server"
       }
     ],
     "paths": {
-      "/": {
+      "/v1/blog": {
         "post": {
           "summary": "Generate blog content",
           "operationId": "generateBlogPost",
@@ -41,7 +41,7 @@
               "content": {
                 "application/json": {
                   "schema": {
-                    "$ref": "#/components/schemas/SuccessResponse"
+                    "$ref": "#/components/schemas/BlogPostSuccessResponse"
                   }
                 }
               }
@@ -78,6 +78,79 @@
             }
           }
         }
+      },
+      "/v1/blog/{blogId}": {
+        "get": {
+          "summary": "Get blog content status and results",
+          "operationId": "getBlogPost",
+          "tags": ["blog"],
+          "security": [
+            {
+              "ApiKeyAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "blogId",
+              "in": "path",
+              "required": true,
+              "description": "ID of the blog post to retrieve",
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/BlogStatusPendingResponse"
+                      },
+                      {
+                        "$ref": "#/components/schemas/BlogStatusCompletedResponse"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Blog post not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "components": {
@@ -85,18 +158,27 @@
         "ApiKeyAuth": {
           "type": "apiKey",
           "in": "header",
-          "name": "x-api-key",
+          "name": "Authorization",
           "description": "API key for authentication. Example: 550e8400-e29b-41d4-a716-446655440000"
         }
       },
       "schemas": {
         "ErrorResponse": {
           "type": "object",
-          "required": ["error"],
+          "required": ["message", "errorCode", "requestId"],
           "properties": {
-            "error": {
+            "message": {
               "type": "string",
               "description": "Error message"
+            },
+            "errorCode": {
+              "type": "string",
+              "description": "Error code"
+            },
+            "requestId": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Request ID"
             }
           }
         },
@@ -120,71 +202,205 @@
         },
         "BlogPostRequest": {
           "type": "object",
-          "required": ["keywords"],
+          "required": ["mode", "template", "templateParams"],
           "properties": {
-            "templateId": {
+            "mode": {
               "type": "string",
-              "description": "ID of the template to use",
-              "default": "default",
-              "enum": ["default"]
+              "enum": ["api"],
+              "default": "api"
             },
-            "keywords": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "List of keywords for the blog post. Currently only the first keyword is used.",
-              "minItems": 1,
-              "maxItems": 1,
-              "example": ["Linux handheld"]
-            },
-            "language": {
+            "template": {
               "type": "string",
-              "description": "Content language. Must be one of the supported languages.",
-              "default": "English",
-              "enum": [
-                "English",
-                "Spanish",
-                "French",
-                "German",
-                "Italian",
-                "Portuguese",
-                "Chinese",
-                "Japanese",
-                "Russian",
-                "Arabic"
-              ]
+              "enum": ["default"],
+              "default": "default"
             },
-            "industry": {
+            "templateParams": {
+              "type": "object",
+              "required": ["keywords"],
+              "properties": {
+                "keywords": {
+                  "type": "string",
+                  "description": "List of keywords for the blog post. The first keyword is used as the primary focus."
+                },
+                "language": {
+                  "type": "string",
+                  "description": "Content language (one of: English, Spanish, French, German, Italian, Portuguese, Chinese, Japanese, Russian, Arabic)",
+                  "default": "English",
+                  "enum": [
+                    "English",
+                    "Spanish",
+                    "French",
+                    "German",
+                    "Italian",
+                    "Portuguese",
+                    "Chinese",
+                    "Japanese",
+                    "Russian",
+                    "Arabic"
+                  ]
+                },
+                "industry": {
+                  "type": "string",
+                  "description": "Type of industry (e.g., 'fishing', 'travel', 'fashion')",
+                  "default": "general"
+                },
+                "usage": {
+                  "type": "string",
+                  "description": "What the store is primarily used for (e.g., 'sales', 'information')",
+                  "default": "general"
+                },
+                "location": {
+                  "type": "string",
+                  "description": "Target market location (e.g., 'US', 'European', 'Australian')",
+                  "default": "general"
+                },
+                "word_count": {
+                  "type": "integer",
+                  "description": "Target word count for the content (1000-12000)",
+                  "default": 6000,
+                  "minimum": 1000,
+                  "maximum": 12000
+                },
+                "anchorLink": {
+                  "type": "string",
+                  "description": "URL for inbound links to be included in the content"
+                }
+              }
+            }
+          },
+          "example": {
+            "mode": "api",
+            "template": "default",
+            "templateParams": {
+              "keywords": "fish rod",
+              "language": "English",
+              "industry": "outdoor",
+              "usage": "sale",
+              "location": "US",
+              "word_count": 6000,
+              "anchorLink": "https://google.com"
+            }
+          }
+        },
+        "BlogPostSuccessResponse": {
+          "type": "object",
+          "required": ["success", "messageId", "blogId", "message"],
+          "properties": {
+            "success": {
+              "type": "boolean"
+            },
+            "messageId": {
               "type": "string",
-              "description": "Type of industry",
-              "default": "fishing",
-              "example": "Video Game"
+              "format": "uuid"
             },
-            "usage": {
+            "blogId": {
               "type": "string",
-              "description": "What the store is primarily used for",
-              "default": "sale",
-              "example": "Game Console"
+              "format": "uuid"
             },
-            "location": {
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        "BlogStatusPendingResponse": {
+          "type": "object",
+          "required": ["success", "data", "requestId"],
+          "properties": {
+            "success": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "object",
+              "required": ["blogId", "status", "createdAt", "updatedAt"],
+              "properties": {
+                "blogId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["pending"]
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "requestId": {
               "type": "string",
-              "description": "Target market location",
-              "default": "US",
-              "example": "US"
+              "format": "uuid"
+            }
+          }
+        },
+        "BlogStatusCompletedResponse": {
+          "type": "object",
+          "required": ["success", "data", "requestId"],
+          "properties": {
+            "success": {
+              "type": "boolean"
             },
-            "word_count": {
-              "type": "integer",
-              "description": "Target word count for the content",
-              "default": 6000,
-              "minimum": 1000,
-              "maximum": 12000,
-              "example": 6000
+            "data": {
+              "type": "object",
+              "required": ["blogId", "response", "status", "createdAt", "updatedAt"],
+              "properties": {
+                "blogId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "response": {
+                  "type": "object",
+                  "required": ["slug", "title", "content", "excerpt", "keywords", "imageKeywords", "status"],
+                  "properties": {
+                    "slug": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "content": {
+                      "type": "string",
+                      "description": "html blog content..."
+                    },
+                    "excerpt": {
+                      "type": "string"
+                    },
+                    "keywords": {
+                      "type": "string"
+                    },
+                    "imageKeywords": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["draft"]
+                    }
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["completed"]
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
             },
-            "anchorLink": {
+            "requestId": {
               "type": "string",
-              "description": "URL for inbound links to be included in the content",
-              "example": "https://google.com"
+              "format": "uuid"
             }
           }
         }
